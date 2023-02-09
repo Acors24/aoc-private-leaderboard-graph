@@ -65,19 +65,16 @@ def accumulate(pts_ts_pairs: list[tuple[int, int]]):
         pts_ts_pairs[i] = (prev_points + extra_points, current_timestamp)
 
 
-today = date.today()
-if today.month == 12 and today.day < 25:
-    last_day = today.day
-else:
-    last_day = 25
+def get_beginning_of_dec():
+    today = date.today()
+    year = today.year if today.month == 12 else today.year - 1
+    return datetime(year, 12, 1, 0, 0, 0, 0)
 
 
 def fill_missing(pts_ts_pairs: list[tuple[int, int]]):
-    year = today.year if today.month == 12 else today.year - 1
-    beginning_of_december = datetime(year, 12, 1, 0, 0, 0, 0)
     current_points = 0
     point_index = -len(pts_ts_pairs)
-    pts_ts_pairs.insert(0, (current_points, int(beginning_of_december.timestamp())))
+    pts_ts_pairs.insert(0, (current_points, int(get_beginning_of_dec().timestamp())))
     for ts in all_timestamps:
         if ts in map(lambda pair: pair[1], pts_ts_pairs):
             current_points = pts_ts_pairs[point_index][0]
