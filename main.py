@@ -1,8 +1,7 @@
 from json import load
 import matplotlib.pyplot as plt
 from colorsys import hsv_to_rgb
-from datetime import date
-from datetime import datetime
+import datetime as dt
 from math import ceil
 
 with open('data.json') as f:
@@ -66,9 +65,9 @@ def accumulate(pts_ts_pairs: list[tuple[int, int]]):
 
 
 def get_beginning_of_dec():
-    today = date.today()
+    today = dt.datetime.today()
     year = today.year if today.month == 12 else today.year - 1
-    return datetime(year, 12, 1, 0, 0, 0, 0)
+    return dt.datetime(year, 12, 1, 0, 0, 0, 0)
 
 
 def fill_missing(pts_ts_pairs: list[tuple[int, int]]):
@@ -84,7 +83,7 @@ def fill_missing(pts_ts_pairs: list[tuple[int, int]]):
 
 
 def timestamp_to_readable(ts: int) -> str:
-    return datetime.fromtimestamp(ts).isoformat()
+    return dt.datetime.fromtimestamp(ts).isoformat()
 
 
 fig, ax = plt.subplots(layout="constrained")
@@ -109,7 +108,7 @@ plt.xticks(rotation=90)
 current_day = get_beginning_of_dec().day
 xticks = ax.xaxis.get_major_ticks()
 for xtick in xticks[1:]:
-    new_day = datetime.fromisoformat(xtick.label1.get_text()).day
+    new_day = dt.datetime.fromisoformat(xtick.label1.get_text()).day
     if new_day == current_day:
         xtick.set_visible(False)
     else:
