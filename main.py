@@ -105,4 +105,14 @@ for i, pts_ts_pairs in enumerate(ind_scores.values()):
 
 ax.legend([data['name'] for _, data in members.items()], bbox_to_anchor=(1.01, 1), loc='upper left', borderaxespad=0)
 plt.xticks(rotation=90)
+
+current_day = get_beginning_of_dec().day
+xticks = ax.xaxis.get_major_ticks()
+for xtick in xticks[1:]:
+    new_day = datetime.fromisoformat(xtick.label1.get_text()).day
+    if new_day == current_day:
+        xtick.set_visible(False)
+    else:
+        current_day = new_day
+
 plt.show()
