@@ -1,7 +1,8 @@
 from json import load
 import matplotlib.pyplot as plt
-from colorsys import hsv_to_rgb
+import matplotlib.dates as mdates
 import datetime as dt
+from colorsys import hsv_to_rgb
 from math import ceil
 
 with open('data.json') as f:
@@ -49,15 +50,11 @@ for day in range(1, 26):
         id, timestamp = pair
         ind_scores[id].append((len(members) - i, timestamp))
 
-all_timestamps = set()
 for id in ind_scores:
     ind_scores[id] = sorted(ind_scores[id], key=lambda pair: pair[1])
-    all_timestamps |= set(map(lambda pair: pair[1], ind_scores[id]))
-
-all_timestamps = sorted(list(all_timestamps))
 
 
-def accumulate(pts_ts_pairs: list[tuple[int, int]]):
+def accumulate_points(pts_ts_pairs: list[tuple[int, int]]):
     for i in range(1, len(pts_ts_pairs)):
         prev_points, _ = pts_ts_pairs[i - 1]
         extra_points, current_timestamp = pts_ts_pairs[i]
@@ -70,30 +67,30 @@ def get_beginning_of_dec():
     return dt.datetime(year, 12, 1, 0, 0, 0, 0)
 
 
-def fill_missing(pts_ts_pairs: list[tuple[int, int]]):
-    current_points = 0
-    point_index = -len(pts_ts_pairs)
-    pts_ts_pairs.insert(0, (current_points, int(get_beginning_of_dec().timestamp())))
-    for ts in all_timestamps:
-        if ts in map(lambda pair: pair[1], pts_ts_pairs):
-            current_points = pts_ts_pairs[point_index][0]
-            point_index += 1
-        else:
-            pts_ts_pairs.insert(len(pts_ts_pairs) + point_index, (current_points, ts))
-
-
-def timestamp_to_readable(ts: int) -> str:
-    return dt.datetime.fromtimestamp(ts).isoformat()
+def add_intermediate_timestamps(pts_ts_pairs: list[tuple[int, int]]):
+    pts_ts_pairs.insert(0, (0, int(get_beginning_of_dec().timestamp())))
+    i = 1
+    while i < len(pts_ts_pairs):
+        previous_points, _ = pts_ts_pairs[i - 1]
+        _, timestamp = pts_ts_pairs[i]
+        pts_ts_pairs.insert(i, (previous_points, timestamp - 1))
+        i += 2
 
 
 fig, ax = plt.subplots(layout="constrained")
+ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+plt.xticks(rotation=90)
 styles = ['-', '--', '-.', ':']
 hue_interval = 360 / ceil(len(ind_scores) / len(styles))
+
 for i, pts_ts_pairs in enumerate(ind_scores.values()):
-    accumulate(pts_ts_pairs)
-    fill_missing(pts_ts_pairs)
+    if not pts_ts_pairs:
+        continue
+
+    accumulate_points(pts_ts_pairs)
+    add_intermediate_timestamps(pts_ts_pairs)
     total_points, timestamps = zip(*pts_ts_pairs)
-    timestamps = list(map(timestamp_to_readable, timestamps))
+    timestamps = list(map(dt.datetime.fromtimestamp, timestamps))
     style = styles[i % len(styles)]
     hue = i // len(styles) * hue_interval / 360
     ax.plot(
@@ -103,15 +100,4 @@ for i, pts_ts_pairs in enumerate(ind_scores.values()):
     )
 
 ax.legend([data['name'] for _, data in members.items()], bbox_to_anchor=(1.01, 1), loc='upper left', borderaxespad=0)
-plt.xticks(rotation=90)
-
-current_day = get_beginning_of_dec().day
-xticks = ax.xaxis.get_major_ticks()
-for xtick in xticks[1:]:
-    new_day = dt.datetime.fromisoformat(xtick.label1.get_text()).day
-    if new_day == current_day:
-        xtick.set_visible(False)
-    else:
-        current_day = new_day
-
 plt.show()
