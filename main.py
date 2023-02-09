@@ -96,11 +96,7 @@ hue_interval = 360 / ceil(len(ind_scores) / len(styles))
 for i, pts_ts_pairs in enumerate(ind_scores.values()):
     accumulate(pts_ts_pairs)
     fill_missing(pts_ts_pairs)
-    try:
-        total_points, timestamps = zip(*pts_ts_pairs)
-    except ValueError as e:
-        print(e, i, pts_ts_pairs)
-        continue
+    total_points, timestamps = zip(*pts_ts_pairs)
     timestamps = list(map(timestamp_to_readable, timestamps))
     style = styles[i % len(styles)]
     hue = i // len(styles) * hue_interval / 360
