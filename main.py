@@ -82,8 +82,9 @@ ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
 plt.xticks(rotation=90)
 styles = ['-', '--', '-.', ':']
 hue_interval = 360 / ceil(len(ind_scores) / len(styles))
+names = []
 
-for i, pts_ts_pairs in enumerate(ind_scores.values()):
+for i, (id, pts_ts_pairs) in enumerate(ind_scores.items()):
     if not pts_ts_pairs:
         continue
 
@@ -98,6 +99,7 @@ for i, pts_ts_pairs in enumerate(ind_scores.values()):
         linestyle=style,
         color=hsv_to_rgb(hue, 1, 1)
     )
+    names.append(members[id]['name'])
 
-ax.legend([data['name'] for _, data in members.items()], bbox_to_anchor=(1.01, 1), loc='upper left', borderaxespad=0)
+ax.legend(names, bbox_to_anchor=(1.01, 1), loc='upper left', borderaxespad=0)
 plt.show()
